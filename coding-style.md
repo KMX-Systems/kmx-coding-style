@@ -1,6 +1,8 @@
 # C++ Coding Style and Conventions Guide
 
-This document outlines the coding standards and best practices for C++ projects targeting **C++11 to C++26** standards. Adherence to these guidelines ensures code is correct, readable, maintainable, and highly performant.
+This document outlines the coding standards and best practices for C++ projects targeting **C++11 to C++26** standards.
+
+Adherence to these guidelines try to ensure code is correct, readable, maintainable, and highly performant.
 
 ## I. General Principles
 
