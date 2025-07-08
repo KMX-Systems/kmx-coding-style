@@ -1,4 +1,4 @@
-# C++ Coding Style and Conventions Guide
+# C++ Coding Style and Conventions Guide (CSCG-2025-07)
 
 This document outlines the coding standards and best practices for C++ projects targeting **C++11 to C++26** standards.
 
