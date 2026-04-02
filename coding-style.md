@@ -1,4 +1,4 @@
-# C++ Coding Style and Conventions Guide (CSCG-2025-07)
+# C++ Coding Style and Conventions Guide (CSCG-2026-04)
 
 This document outlines the coding standards and best practices for C++ projects targeting **C++11 to C++26** standards.
 
@@ -44,7 +44,23 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 
 *   **3.1** **Indentation:** Use **4 spaces** for each indentation level. The use of tabs is forbidden.
 
-*   **3.2** **Brace Style:** Use the **Allman brace style**, where the opening brace `{` is placed on a new, aligned line. Braces are **exclusively** used for scopes containing multiple statements. For single-statement blocks within control structures (`if`, `for`, `while`, etc.), braces **must be omitted**.
+*   **3.2** **Brace Style:** Use the **Allman brace style**, where the opening brace `{` is placed on a new, aligned line. Braces are **exclusively** used for scopes containing multiple statements. For single-statement blocks within control structures (`if`, `while`, `for`, `else`, `do`), braces **must be omitted**. Keep the code compact by using directly the statement with a padding (indentation).
+
+    **Preferred**
+    ```cpp
+    if (condition)
+        return false;
+    ```
+
+    instead of
+    ```cpp
+    if (condition)
+    {
+        return false;
+    }
+    ```
+
+
 
 *   **3.3** **Spacing:**
     *   **3.3.1** Use a single space around binary and ternary operators.
