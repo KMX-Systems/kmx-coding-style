@@ -79,6 +79,7 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 *   **4.1** **Error Handling:**
     *   **4.1.1** **Exceptions (`noexcept(false)`):** Use for reporting precondition violations (e.g., invalid arguments) and unrecoverable runtime errors (e.g., convergence failure, out-of-range values).
     *   **4.1.2** **Return Codes (`noexcept`):** Use for performance-critical functions where failure is a predictable and frequent outcome. An `enum class` should define the possible error states.
+    *   **4.1.3** **Custom Exceptions:** Prefer project-defined exception types over standard library exceptions, even when a type alias is used to shorten the name. An alias must refer to a custom exception type, not to `std::exception` or another standard exception. Domain-specific exceptions make error semantics explicit and avoid ambiguous catch sites.
 
 *   **4.2** **Data Structures:**
     *   **4.2.1** Use `struct` for simple aggregate data types (Plain Old Data).
