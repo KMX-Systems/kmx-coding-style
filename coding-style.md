@@ -13,7 +13,7 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
         *   Mixing arithmetic and bitwise operators: use `(a + b) & mask` not `a + b & mask`.
         *   Ternary operators with other operators: use `(a == b) ? true_val : false_val` not `a == b ? true_val : false_val` when combining with other expressions.
         *   All sub-expressions in compound conditions should be wrapped: `if ((a == 0u) || ((b > 10u) && (c != nullptr)))` not `if (a == 0u || b > 10u && c != nullptr)`.
-        *   Exception: single operands and unary expressions need no extra parentheses, as there is no ambiguity: use `if (!finished && (count > 0u))` not `if ((!finished) && (count > 0u))`.
+        *   Exception: operands that are already atomic - identifiers, literals, function calls, member accesses, subscripts - and unary expressions need no extra parentheses: use `if (!finished && item.has_value() && (count > 0u))` not `if ((!finished) && (item.has_value()) && (count > 0u))`.
     *   **1.1.2** Use brace-initialization `{}` for zero-initialization of variables. Use `()` for explicit constructor calls.
         *   **1.1.2.1** Apply `{}` to all POD types and objects that should be default-constructed: `int x {}; std::vector<int> v {}; auto p = std::make_unique<T>();`. Avoid `= 0`, `= nullptr`, or `= 0.0f`.
 
@@ -26,6 +26,14 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
     *   **1.3.1** Use uniform initialization `{}` to return default-constructed or empty-state objects where applicable. This is more concise and expressive than alternatives. For example, prefer `return {};` over `return std::nullopt;` or `return std::vector<T>();`.
     *   **1.3.2** Use `= default` and `= delete` to explicitly control the generation of special member functions, letting the compiler provide the implementation where appropriate.
     *   **1.3.3** Avoid redundant abstractions. Do not create a complex class hierarchy when a simple `struct` or a free function will suffice.
+    *   **1.3.4** **Nested Template Types:** A type spelled with two or more nested template instantiations **must** be replaced by a meaningful type alias named after the concept it represents, not after its structure. Declare the alias next to the type or interface it belongs to and use it consistently in signatures, members, and local variables.
+        ```cpp
+        using datagram_result_t = std::expected<datagram, std::error_code>;
+        using datagram_task_t = task<datagram_result_t>;
+
+        datagram_task_t receive();                              // Correct
+        task<std::expected<datagram, std::error_code>> receive(); // Incorrect
+        ```
 
 *   **1.4** **Correctness and Robustness:** Prioritize code that is verifiably correct.
     *   **1.4.1** **Const Correctness:** All variables, parameters, and member functions that are not intended to be modified **must** be declared `const`.
@@ -89,6 +97,12 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 *   **4.2** **Data Structures:**
     *   **4.2.1** Use `struct` for simple aggregate data types (Plain Old Data).
     *   **4.2.2** Use `class` when invariants must be maintained through a public interface with private data members.
+    *   **4.2.3** **Enumerations over Strings:** A value drawn from a fixed, known set - a state, kind, mode, counter or option identifier - **must** be an `enum class`, never a string. Strings defeat compile-time checking, make typos silent runtime failures, force dispatch through chains of comparisons, and prevent exhaustiveness diagnostics.
+        ```cpp
+        void add(counter_t::id, amount);          // Correct: switch dispatches on the enum
+        void add(std::string_view name, amount);  // Incorrect: string compared against every candidate
+        ```
+        *   **4.2.3.1** Convert at the boundary. Where a string is unavoidable (parsing, configuration files, external protocols), map it to the enumeration once at the point of entry and use only the enumeration internally.
 
 *   **4.3** **Namespaces:**
     *   **4.3.1** **Hierarchy:** Structure namespaces hierarchically from general to specific concepts (e.g., `kmx::gis::coordinate::wgs84`).
@@ -104,7 +118,9 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
     *   **4.5.2** Prefer `static` functions in `.cpp` files rather than using anonymous namespaces for them.
     *   **4.5.3** Template methods longer than 12 lines of code **should** be defined outside classes.
     *   **4.5.4** `constexpr` and `consteval` functions and methods do not need the `inline` specifier.
-    *   **4.5.5** Use `[[likely]]` and `[[unlikely]]` for branches.
+    *   **4.5.5** **Branch Prediction Hints (C++20):** Use `[[likely]]`/`[[unlikely]]` only on hot-path branches whose outcome is strongly skewed and known (error paths, loop exits); leave balanced or unknown branches unannotated. They are hints only - correctness **must never** depend on them.
+        *   **4.5.5.1** The attribute applies to the branch **statement**, and precedes a `case` label: `if (buffer.empty()) [[unlikely]] return error_t::no_data;`, `[[likely]] case state_t::running:`.
+    *   **4.5.6** **Lambdas:** A lambda body longer than 3 lines **must** be extracted into a named function or method, leaving the lambda as glue that only forwards to it: `[this](const auto& item) { return process(item); }`.
 
 ## 5. Documentation
 
