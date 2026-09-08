@@ -8,8 +8,13 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 ## 1. General Principles
 
 *   **1.1** **Readability and Maintainability:** Code must be clear, self-documenting, and easy to maintain.
-    *   **1.1.1** Group sub-expressions with parentheses `()` to avoid any ambiguity regarding operator precedence.
+    *   **1.1.1** **Operator Precedence Clarity:** Avoid expressions where operator precedence could be misunderstood without explicit parentheses (CERT EXP/CppCheck/Clang-Tidy best practice). Group sub-expressions with parentheses `()` to avoid any ambiguity regarding operator precedence. This includes:
+        *   Mixing `&&` and `||` operators: use `(a && b) || (c && d)` not `a && b || c && d`.
+        *   Mixing arithmetic and bitwise operators: use `(a + b) & mask` not `a + b & mask`.
+        *   Ternary operators with other operators: use `(a == b) ? true_val : false_val` not `a == b ? true_val : false_val` when combining with other expressions.
+        *   All sub-expressions in compound conditions should be wrapped: `if ((a == 0u) || ((b > 10u) && (c != nullptr)))` not `if (a == 0u || b > 10u && c != nullptr)`.
     *   **1.1.2** Use brace-initialization `{}` for zero-initialization of variables. Use `()` for explicit constructor calls.
+        *   **1.1.2.1** Apply `{}` to all POD types and objects that should be default-constructed: `int x {}; std::vector<int> v {}; auto p = std::make_unique<T>();`. Avoid `= 0`, `= nullptr`, or `= 0.0f`.
 
 *   **1.2** **Modern C++ and Standard Library Usage:**
     *   **1.2.1** Leverage the standard library's algorithms and data structures instead of creating custom implementations for common functionalities.
@@ -45,22 +50,21 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 *   **3.1** **Indentation:** Use **4 spaces** for each indentation level. The use of tabs is forbidden.
 
 *   **3.2** **Brace Style:** Use the **Allman brace style**, where the opening brace `{` is placed on a new, aligned line. Braces are **exclusively** used for scopes containing multiple statements. For single-statement blocks within control structures (`if`, `while`, `for`, `else`, `do`), braces **must be omitted**. Keep the code compact by using directly the statement with a padding (indentation).
+    *   **3.2.1** Single-statement blocks include simple return, assignment, function call, or conditional within a loop. Examples:
+        ```cpp
+        if (condition)
+            return result;  // Correct: no braces
 
-    **Preferred**
-    ```cpp
-    if (condition)
-        return false;
-    ```
+        for (auto item : collection)
+            if (item != nullptr)  // Correct: nested single-statement, no outer braces
+                process(item);
 
-    instead of
-    ```cpp
-    if (condition)
-    {
-        return false;
-    }
-    ```
-
-
+        if (condition)
+        {
+            statement1();
+            statement2();  // Correct: multiple statements, braces required
+        }
+        ```
 
 *   **3.3** **Spacing:**
     *   **3.3.1** Use a single space around binary and ternary operators.
@@ -88,10 +92,18 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 *   **4.3** **Namespaces:**
     *   **4.3.1** **Hierarchy:** Structure namespaces hierarchically from general to specific concepts (e.g., `kmx::gis::coordinate::wgs84`).
     *   **4.3.2** **Unique Naming:** Words within a namespace hierarchy should be unique.
-    *   **4.3.3** **Anonymous Namespaces:** The use of anonymous namespaces is forbidden. Use a nested `detail` or `internal` namespace for internal-linkage entities.
+    *   **4.3.3** **Anonymous Namespaces:** The use of anonymous namespaces is forbidden. Prefer `static` functions in `.cpp` files for translation-unit-local functions, and use a nested `detail` or `internal` namespace for other internal-linkage entities.
+        *   **4.3.3.1** All functions and types in the `detail` namespace **must** be qualified at their call sites or referenced via the full path: `detail::write_be16(...)`, `detail::helper_function()`. Do not use unqualified lookup or `using namespace detail;`.
     *   **4.3.4** **Inline Namespaces:** Use `inline` namespaces for versioning or to export a specific set of functionality from a nested implementation namespace, making it part of the parent's interface.
 
 *   **4.4** **`std::hash` Specialization:** Provide a specialization of `std::hash` for any custom type intended to be used as a key in an unordered associative container.
+
+*   **4.5** **Functions and Methods:**
+    *   **4.5.1** Non-template methods and functions longer than 2 lines of code **must** be defined in `.cpp` files.
+    *   **4.5.2** Prefer `static` functions in `.cpp` files rather than using anonymous namespaces for them.
+    *   **4.5.3** Template methods longer than 12 lines of code **should** be defined outside classes.
+    *   **4.5.4** `constexpr` and `consteval` functions and methods do not need the `inline` specifier.
+    *   **4.5.5** Use `[[likely]]` and `[[unlikely]]` for branches.
 
 ## 5. Documentation
 
