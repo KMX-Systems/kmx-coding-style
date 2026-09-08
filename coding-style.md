@@ -1,4 +1,4 @@
-# C++ Coding Style and Conventions Guide (CSCG-2026-04)
+# C++ Coding Style and Conventions Guide (CSCG-2026-09)
 
 This document outlines the coding standards and best practices for C++ projects targeting **C++11 to C++26** standards.
 
@@ -16,6 +16,7 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
         *   Exception: operands that are already atomic - identifiers, literals, function calls, member accesses, subscripts - and unary expressions need no extra parentheses: use `if (!finished && item.has_value() && (count > 0u))` not `if ((!finished) && (item.has_value()) && (count > 0u))`.
     *   **1.1.2** Use brace-initialization `{}` for zero-initialization of variables. Use `()` for explicit constructor calls.
         *   **1.1.2.1** Apply `{}` to all POD types and objects that should be default-constructed: `int x {}; std::vector<int> v {}; auto p = std::make_unique<T>();`. Avoid `= 0`, `= nullptr`, or `= 0.0f`.
+    *   **1.1.3** **Literal Suffixes:** Numeric literals **must** carry the suffix matching the type they are used with (`u`, `ul`, `ull`, `f`, `L`), in expressions, initializers and template arguments alike: `count > 0u`, `std::array<std::uint32_t, 3u>`, `scale * 0.5f`. This prevents signed/unsigned comparison warnings and silent narrowing conversions.
 
 *   **1.2** **Modern C++ and Standard Library Usage:**
     *   **1.2.1** Leverage the standard library's algorithms and data structures instead of creating custom implementations for common functionalities.
