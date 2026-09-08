@@ -13,6 +13,7 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
         *   Mixing arithmetic and bitwise operators: use `(a + b) & mask` not `a + b & mask`.
         *   Ternary operators with other operators: use `(a == b) ? true_val : false_val` not `a == b ? true_val : false_val` when combining with other expressions.
         *   All sub-expressions in compound conditions should be wrapped: `if ((a == 0u) || ((b > 10u) && (c != nullptr)))` not `if (a == 0u || b > 10u && c != nullptr)`.
+        *   Exception: single operands and unary expressions need no extra parentheses, as there is no ambiguity: use `if (!finished && (count > 0u))` not `if ((!finished) && (count > 0u))`.
     *   **1.1.2** Use brace-initialization `{}` for zero-initialization of variables. Use `()` for explicit constructor calls.
         *   **1.1.2.1** Apply `{}` to all POD types and objects that should be default-constructed: `int x {}; std::vector<int> v {}; auto p = std::make_unique<T>();`. Avoid `= 0`, `= nullptr`, or `= 0.0f`.
 
