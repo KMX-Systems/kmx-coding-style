@@ -108,6 +108,22 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 *   **4.3** **Namespaces:**
     *   **4.3.1** **Hierarchy:** Structure namespaces hierarchically from general to specific concepts (e.g., `kmx::gis::coordinate::wgs84`).
     *   **4.3.2** **Unique Naming:** Words within a namespace hierarchy should be unique.
+        *   **4.3.2.1** **No Namespace Repetition:** This uniqueness extends to the entities a namespace declares. The names of types, functions, variables, constants and type aliases **must not** repeat any word of their enclosing namespace path, whether from the innermost namespace or from any outer one. The namespace already provides that context, so repeating it only makes names longer and qualified uses stutter (`normalized::normalized_atmosphere`). If a name is ambiguous where it is used, qualify it with its namespace there instead of building the namespace into the name.
+            ```cpp
+            namespace kmx::sling::domain::normalized
+            {
+                struct wind_segment;            // Correct: used as normalized::wind_segment
+                struct atmosphere;              // Correct
+                struct constraints;             // Correct
+            }
+
+            namespace kmx::sling::domain::normalized
+            {
+                struct normalized_wind_segment; // Incorrect: repeats "normalized"
+                struct normalized_atmosphere;   // Incorrect: repeats "normalized"
+                struct domain_constraints;      // Incorrect: repeats "domain" from an outer namespace
+            }
+            ```
     *   **4.3.3** **Anonymous Namespaces:** The use of anonymous namespaces is forbidden. Prefer `static` functions in `.cpp` files for translation-unit-local functions, and use a nested `detail` or `internal` namespace for other internal-linkage entities.
         *   **4.3.3.1** All functions and types in the `detail` namespace **must** be qualified at their call sites or referenced via the full path: `detail::write_be16(...)`, `detail::helper_function()`. Do not use unqualified lookup or `using namespace detail;`.
     *   **4.3.4** **Inline Namespaces:** Use `inline` namespaces for versioning or to export a specific set of functionality from a nested implementation namespace, making it part of the parent's interface.
