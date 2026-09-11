@@ -208,6 +208,14 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
         api/kmx/gui/widget/registry.hpp   // Incorrect: class manager in a header not named after it
         api/kmx/gui/widget/geometry.hpp   // Incorrect: struct size has the method area, so it belongs in size.hpp
         ```
+    *   **3.4.6** **No Classes in Source Files:** A class, including a `struct` with a method that is not defaulted (see 3.4.5), **must not** be defined in a `.cpp` file. A class defined in a `.cpp` file is visible only inside that file, so a test cannot include it and can reach it only through the code that uses it. Define the class in its own header instead; its methods still follow 4.5.1, so the longer ones are implemented in the matching `.cpp` file. This includes internal helper classes, whose headers go under `inc/`. Plain structs may still be defined in a `.cpp` file. Test sources (see 2.2.1) are exempt, since their fixtures and test doubles are not under test themselves.
+        ```text
+        inc/kmx/gui/widget/detail/cache.hpp   // Correct: class cache, a helper used by manager.cpp
+        src/kmx/gui/widget/detail/cache.cpp   // Correct: the methods of class cache
+        src/kmx/gui/widget/manager.cpp        // Correct: plain struct entry, used only in this file
+
+        src/kmx/gui/widget/manager.cpp        // Incorrect: class cache, which no test can include
+        ```
 
 *   **3.5** **Line Length:** A line of code **must not** exceed **140 characters**, counting indentation and trailing comments. A statement, signature or expression that would exceed the limit **must** be wrapped across multiple lines.
 
@@ -266,7 +274,7 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
         ```
         *   **4.3.5.1** A file declares either the namespace of its directory, or a namespace one level deeper named exactly after the file, which makes the file itself the leaf of the hierarchy.
         *   **4.3.5.2** A `.cpp` file sits under `src/` at the same relative path as the header it implements and declares the same namespace.
-        *   **4.3.5.3** Implementation namespaces follow the same rule: a `detail` or `internal` namespace either has its own `detail/` or `internal/` directory, or is nested inside the file that uses it.
+        *   **4.3.5.3** Implementation namespaces follow the same rule: a `detail` or `internal` namespace either has its own `detail/` or `internal/` directory, or is nested inside the file that uses it. When nested inside a `.cpp` file, it must not define a class (see 3.4.6).
         *   **4.3.5.4** Include project headers by their full path from the source root (`#include <kmx/sling/domain/drag/point.hpp>`), never by a path relative to the including file.
         *   **4.3.5.5** **Exceptions:** Only the following are exempt:
             *   Declarations the language requires in a foreign namespace, such as `std::hash` specializations (see 4.4).
