@@ -62,7 +62,7 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 | Entity Type | Convention | Example |
 | :--- | :--- | :--- |
 | **Namespaces** | `lowercase_with_underscores` | `project_name::data_model` |
-| **Classes & Structs** | `lowercase_with_underscores` | `widget_manager`, `coordinate` |
+| **Classes & Structs** | `lowercase_with_underscores` | `wind_segment`, `coordinate` |
 | **Functions & Methods** | `lowercase_with_underscores` | `calculate_total_value`, `parse_input` |
 | **Variables & Data Members**| `lowercase_with_underscores` | `item_count`, `is_valid` |
 | **Private Data Members** | `lowercase_with_underscores_` (trailing underscore) | `buffer_`, `current_index_` |
@@ -198,6 +198,16 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
         #endif
         ```
     *   **3.4.4** Use forward declarations where possible to minimize header dependencies.
+    *   **3.4.5** **One Class per Header:** A header **must** define at most one class, and **must** be named after that class: `widget::manager` is defined in `widget/manager.hpp`. A `struct` with any method that is not defaulted (`= default`) counts as a class under this rule. Plain structs, with only data members and defaulted methods, have no such limit: several may share a header, on their own or next to the class that uses them. Types nested inside a class are part of that class. A header named after its class declares the namespace of its directory (see 4.3.5.1), since a namespace named after the class would repeat its name (see 4.3.2.1).
+        ```text
+        api/kmx/gui/widget/item.hpp       // Correct: class item
+        api/kmx/gui/widget/manager.hpp    // Correct: class manager, plus the plain struct create_params it takes
+        api/kmx/gui/widget/geometry.hpp   // Correct: plain structs position and size
+
+        api/kmx/gui/widget/widget.hpp     // Incorrect: classes item and manager, which need item.hpp and manager.hpp
+        api/kmx/gui/widget/registry.hpp   // Incorrect: class manager in a header not named after it
+        api/kmx/gui/widget/geometry.hpp   // Incorrect: struct size has the method area, so it belongs in size.hpp
+        ```
 
 *   **3.5** **Line Length:** A line of code **must not** exceed **140 characters**, counting indentation and trailing comments. A statement, signature or expression that would exceed the limit **must** be wrapped across multiple lines.
 
@@ -276,17 +286,20 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
     *   **4.5.7** **Function and Method Length:** A function or method body **must not** exceed one display page, approximately 24 lines of implementation code. If it exceeds this limit, split it into smaller functions or methods with clear, focused responsibilities.
     *   **4.5.8** **Parameter Count:** A function or method with 5 or more parameters **must** have its parameters packed into a `struct`, passed as a single argument. This improves call-site readability and avoids errors from misordered arguments of the same type.
         ```cpp
-        struct create_widget_params
+        namespace kmx::gui::widget
         {
-            std::string_view name;
-            std::uint32_t width {};
-            std::uint32_t height {};
-            color_t color {};
-            bool visible {};
-        };
+            struct create_params
+            {
+                std::string_view name;
+                std::uint32_t width {};
+                std::uint32_t height {};
+                color_t color {};
+                bool visible {};
+            };
 
-        widget create_widget(const create_widget_params& params); // Correct
-        widget create_widget(std::string_view name, std::uint32_t width, std::uint32_t height, color_t color, bool visible); // Incorrect
+            item create(const create_params& params); // Correct
+            item create(std::string_view name, std::uint32_t width, std::uint32_t height, color_t color, bool visible); // Incorrect
+        }
         ```
     *   **4.5.9** **`[[nodiscard]]`:** A function or method whose return value is its purpose **must** be marked `[[nodiscard]]`: every non-`void` `const` method, every side-effect-free computation, and every function returning `std::expected` or an error code. Ignoring such a result is almost always a bug, and the attribute lets the compiler report it.
 
