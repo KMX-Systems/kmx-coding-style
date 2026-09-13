@@ -285,6 +285,22 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 
 *   **4.5** **Functions and Methods:**
     *   **4.5.1** Non-template methods and functions longer than 2 lines of code **must** be defined in `.cpp` files.
+        *   **4.5.1.1** **Short Methods in the Class:** Non-template methods of at most 2 lines of code **should** be defined inside their class. A body that short reads at a glance next to its declaration, and the compiler can inline it into every caller. The exception is a method whose body needs a dependency the header would otherwise not include: define it in the `.cpp` file, so the header keeps only a forward declaration (see 3.4.4) and the dependency stays hidden from every file that includes it.
+            ```cpp
+            namespace kmx::gui::widget
+            {
+                class manager
+                {
+                public:
+                    [[nodiscard]] std::size_t count() const noexcept { return items_.size(); } // Correct: short, defined in the class
+                    void save(io::archive& archive) const noexcept(false);                     // Correct: short, but hides the io::archive header
+                    void clear() noexcept;                                                     // Incorrect: short, with no dependency to hide
+
+                private:
+                    std::vector<item> items_ {};
+                };
+            }
+            ```
     *   **4.5.2** Prefer `static` functions in `.cpp` files rather than using anonymous namespaces for them.
     *   **4.5.3** Template methods longer than 12 lines of code **should** be defined outside classes.
     *   **4.5.4** `constexpr` and `consteval` functions and methods do not need the `inline` specifier.
