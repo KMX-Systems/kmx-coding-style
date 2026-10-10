@@ -1,4 +1,4 @@
-# C++ Coding Style and Conventions Guide (CSCG-2026-09)
+# C++ Coding Style and Conventions Guide (CSCG-2026-10)
 
 This document outlines the coding standards and best practices for C++ projects targeting **C++11 to C++26** standards.
 
@@ -23,6 +23,16 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
     *   **1.2.2** Always use the `std::` namespace prefix for all standard library types, including fundamental types like `std::size_t`, `std::uint8_t`, and `std::int64_t`.
     *   **1.2.3** Use modern C++ features where appropriate (e.g., `if constexpr`, `std::format`, `std::span`, spaceship operator `<=>`) to improve type safety, performance, and clarity.
     *   **1.2.4** **No C-style Casts:** C-style casts `(T)value` are forbidden. Use the named casts `static_cast`, `const_cast` and `reinterpret_cast`, or `std::bit_cast`, so every conversion states what it does and can be found by searching.
+    *   **1.2.5** **Type-Deduced Local Variables:** Use `auto` for a local variable initialized from an expression when the exact type is not part of the variable's intent. This avoids repeating the expression's result type and lets changes to upstream types propagate through intermediate calculations. Keep an explicit type when a conversion, precision, width or other specific representation is intentional. Type deduction still follows the usual arithmetic conversion rules, including the types of literals.
+        ```cpp
+        double f(const double input)
+        {
+            const auto x = input * 3.5;
+            const auto y = x / 2;
+            const auto z = x + (y * 10);
+            return z;
+        }
+        ```
 
 *   **1.3** **Minimalism and Expressiveness:** Strive for concise code that leverages C++ features to eliminate boilerplate and clearly express intent. Minimalism should enhance readability, not obscure it with overly clever or terse syntax.
     *   **1.3.1** Use uniform initialization `{}` to return default-constructed or empty-state objects where applicable. This is more concise and expressive than alternatives. For example, prefer `return {};` over `return std::nullopt;` or `return std::vector<T>();`.
@@ -54,6 +64,7 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
 *   **1.4** **Correctness and Robustness:** Prioritize code that is verifiably correct.
     *   **1.4.1** **Const Correctness:** All variables, parameters, and member functions that are not intended to be modified **must** be declared `const`.
     *   **1.4.2** **Exception Safety:** All functions **must** have a correct `noexcept` specifier. Functions that can fail due to invalid input or runtime conditions throw exceptions and are marked `noexcept(false)`. Functions that handle errors via other means (e.g., return codes) and are guaranteed not to throw are marked `noexcept`.
+    *   **1.4.3** **Switch Default Branches:** Every `switch` statement **must** contain a `default` label, and the `default` branch **must** end with an explicit `break` statement. This makes the behavior for unhandled values explicit and prevents accidental fallthrough.
 
 ## 2. Naming Conventions
 
@@ -97,9 +108,11 @@ Adherence to these guidelines try to ensure code is correct, readable, maintaina
                 switch (mode_)
                 {
                     case mode_t::fast:
-                        return run_fast();
+                        run_fast();
+                        break;
                     default:
-                        return run_safe();
+                        run_safe();
+                        break;
                 }
             }
         }
